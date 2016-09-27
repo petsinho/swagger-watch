@@ -1,0 +1,200 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Web product upload  API",
+        "description": "Provides a basic API of web-product-upload-bulk",
+        "version": "1.0.0"
+    },
+    "host": "aacctt.org",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/v1",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/job/id/": {
+            "get": {
+                "operationId": "loadJob",
+                "summary": "Load a specific job",
+                "description": "The consumer provides a job to be loaded.\nparameters:\n- name: job\n  in: query\n  description: The job to load.\n  required: true\n  type: $ref: '#/definitions/Job'\n  format: double\n",
+                "tags": [
+                    "Jobs"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An single job that matches our search",
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Job"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs/": {
+            "get": {
+                "operationId": "loadJobs",
+                "summary": "Loads all jobs",
+                "description": "The consumer provides a job to be loaded.\nparameters:\n- name: job\n  in: query\n  description: The jobs to be loaded.\n  required: true\n  type: $ref: '#/definitions/Job'\n  format: double\n",
+                "tags": [
+                    "Jobs"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An single job that matches our search",
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Job"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/id/": {
+            "get": {
+                "operationId": "loadProduct",
+                "summary": "Load a specific product",
+                "description": "The consumer provides a product to be loaded.\nparameters:\n- name: product\n  in: query\n  description: The product to load.\n  required: true\n  type: $ref: '#/definitions/Product'\n  format: double\n",
+                "tags": [
+                    "Products"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An single product that matched our search",
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Product"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/": {
+            "get": {
+                "operationId": "loadAllProducts",
+                "summary": "Loads all products",
+                "description": "The consumer provides a job id and gets all products related.\nparameters:\n- name: product\n  in: query\n  description: The product to load.\n  required: true\n  type: $ref: '#/definitions/Product'\n  format: double\n",
+                "tags": [
+                    "Products"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An single product that matched our search",
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Product"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Product": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier representing a specific product."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Description of product."
+                },
+                "jobId": {
+                    "type": "string",
+                    "description": "Job id related to this action."
+                },
+                "files": {
+                    "type": "object",
+                    "description": "Object with 2 properties, front and back."
+                },
+                "barcode": {
+                    "type": "string",
+                    "description": "The barcode id describing this product."
+                },
+                "weight": {
+                    "type": "number",
+                    "description": "The weight of the product in kg."
+                },
+                "position": {
+                    "type": "number",
+                    "description": "The position of the product."
+                },
+                "country": {
+                    "type": "string",
+                    "description": "The name of the country the product origins from."
+                }
+            }
+        },
+        "Job": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier representing a specific job."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Descriptive name of a job."
+                },
+                "status": {
+                    "type": "number",
+                    "description": "The current status of the job."
+                },
+                "itemList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Job"
+                    },
+                    "description": "Array of items releated to this job."
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

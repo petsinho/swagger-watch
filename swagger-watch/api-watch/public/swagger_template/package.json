@@ -1,0 +1,16 @@
+{
+  "name": "web-product-upload-bulk",
+  "version": "1.0.0",
+  "description": "API for WEB calls",
+  "scripts": {
+ 
+  },
+  "author": "Panagiotis Petsas",
+  "license": "ISC",
+     "dependencies": {
+        "body-parser": "^1.15.2",
+        "express": "^4.14.0",
+        "minimist": "^1.2.0",
+        "swagger-node-express": "^2.1.3"
+  }
+}
