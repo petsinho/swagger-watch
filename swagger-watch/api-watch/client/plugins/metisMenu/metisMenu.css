@@ -19,6 +19,7 @@
 }
 
 
+
 /*
  * Require Font-Awesome
  * http://fortawesome.github.io/Font-Awesome/
@@ -48,6 +49,10 @@
     -ms-transform: rotate(45deg);
     -o-transform: rotate(45deg);
     transform: rotate(45deg);
+}
+.iframeContainer {
+    float : right;
+    margin-left : 10%;
 }
 
 .plus-minus {

@@ -155,7 +155,7 @@ if (Meteor.isServer) {
         return new Promise(function (resolve, reject) {
             let portPrefix = '800';
             let portInc = 1;
-
+            let apiPort = 3000;
             APIprojects.forEach(function (project) {
                 //check if file exists first
                 try {
@@ -168,7 +168,8 @@ if (Meteor.isServer) {
                     let swagFileContent = fs.readFileSync(path.join(local_project_root, '/client', swagFilePath), 'utf8');
                     swagFileContent = swagFileContent.replace('__$API_TITLE$__', project.project_name + ' API');
                     swagFileContent = swagFileContent.replace('__$API_DESC$__', 'This is the API for ' + project.project_name);
-                    swagFileContent = swagFileContent.replace('__$PORT$__', portPrefix + portInc);
+                    apiPort = portPrefix + portInc++;
+                    swagFileContent = swagFileContent.replace('__$PORT$__', apiPort);
                     fs.writeFileSync(runSwaggerTargetPath, swagFileContent, 'utf8');
 
                     let manualStartScriptContent = '';
@@ -202,7 +203,8 @@ if (Meteor.isServer) {
                     });
                     console.log('process started..');
                     console.log('will check for npm module dependencies');
-                    resolve();
+                    project.port  = apiPort;
+                    resolve(apiPort);
                 }
                 catch (ex) {
                     console.log('ex...', ex);
