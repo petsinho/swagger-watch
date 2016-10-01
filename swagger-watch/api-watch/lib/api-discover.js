@@ -7,24 +7,35 @@ if (Meteor.isServer) {
     import { mkdirp } from 'mkdirp';
     import { exec } from 'child_process'
 
+    const ip = require('ip');
     const projects_path = '../../../../../../../../';
-    const local_project_root = path.join(projects_path, '/swagger-watch/swagger-watch/api-watch');
-    const swag_temp_dir = path.join(projects_path, '/swagger-watch/swagger-watch/api-watch/public', 'swagger_template');
+    const project_root = '../../../../../../../../';
+    let root_projects = fs.readdirSync(project_root);
+    const my_project_name = root_projects.find(function (proj) { if (proj.includes('swagger-watcher') || proj.includes('swagger-api-watcher')) return true; }) || 'swagger-api-watcher';
+    const local_project_root = path.join(projects_path, `/${my_project_name}/swagger-watch/api-watch`);
+    const swag_temp_dir = path.join(projects_path, `/${my_project_name}/swagger-watch/api-watch/public`, 'swagger_template');
     const swagger_yaml_file = 'swagger.yaml';
     const swagger_json_file = 'swagger.json';
     const hostOS = process.platform.includes('win') ? 'WINDOWS' : 'LINUX';
     const swagger_gen_dir = hostOS.includes('WINDOWS') ? 'C:/temp/swagger_generated' : '/etc/swagger_generated';
 
     APIprojects = [];
+    meteorHostIP = ip.address();
 
-    console.log('host os ', hostOS);
+    console.log('------------------ ENVIRONMENT INFO--------------');
+    console.log('Host os: ', hostOS);
+    console.log('Root url', Meteor.absoluteUrl());
+    console.log('Project name: ', my_project_name);
+    console.log('Host IP :', ip.address());
+    console.log('-------------------------------------------------');
+
 
     function discoverSwagerAPI() {
         return new Promise(function (resolve, reject) {
             fs.readdir(projects_path, function (err, res) {
                 //console.log('read those dirs : ', res);
                 res.forEach(function (project) {
-                    if (!project.includes('swagger-watch'))
+                    if (!project.includes(my_project_name))
                         search.recursiveSearch(swagger_yaml_file, path.join(projects_path, project), function (err, res) {
                             //We found something
                             if (res) {
@@ -37,7 +48,7 @@ if (Meteor.isServer) {
                             //when search is completed.
                             function (results) {
                                 if (results) {
-                                    console.log('Discovered API projects ');
+                                    console.log(`[lib] Discovered API projects. ${project} `);
                                     resolve(results);
                                 }
                                 else {
@@ -55,22 +66,25 @@ if (Meteor.isServer) {
         return new Promise(function (resolve, reject) {
             APIprojects.forEach(function (project) {
                 try {
-
                     let project_swag_dir = path.join(swagger_gen_dir, project.project_name);
 
                     mkdirp.sync(project_swag_dir);
-
-                    //  console.log(`will copy from \r\n ${swag_temp_dir}  \r\n to \r\n ${project_swag_dir}`)
+                    //console.log(`will copy from \r\n ${swag_temp_dir}  \r\n to \r\n ${project_swag_dir}`)
                     fs.copy(swag_temp_dir, project_swag_dir, function (err) {
-                        if (err) reject(err)
-                        console.log("swag project created at ", project_swag_dir);
-                        project['swagger_dir'] = project_swag_dir;
-                        resolve('ok');
+                        if (err) {
+                            console.log('error copying template dir ', err);
+                            reject(err)
+                        }
+                        else {
+                            project['swagger_dir'] = project_swag_dir;
+                            console.log("swag project. willk resolve created at ", project_swag_dir);
+                            resolve();
+                        }
                     });
                     //resolve('s');
                 }
                 catch (ex) {
-                    console.log(ex);
+                    console.log('---- rejected :', ex);
                     reject(ex);
                 }
             })
@@ -79,7 +93,6 @@ if (Meteor.isServer) {
 
     function convertYAMLtoJSON() {
         return new Promise(function (resolve, reject) {
-            console.log('......conversion.total projs: ', APIprojects.length);
             APIprojects.forEach(function (project) {
                 console.log('proj yaml path : ', project.yaml_path);
                 fs.readFile(project.yaml_path, 'utf8', function (err, res) {
@@ -159,7 +172,6 @@ if (Meteor.isServer) {
             APIprojects.forEach(function (project) {
                 //check if file exists first
                 try {
-                    console.log('will create swagger file..')
                     let swagFilePath = 'runSwagger.js';
                     let scriptFileName = 'runSwagger.js';
                     let isWindows = hostOS.includes('WINDOWS');
@@ -180,15 +192,18 @@ if (Meteor.isServer) {
                     }
                     else {
                         //create bash script content
-                        manualStartScriptContent += 'npm install\r\n';
-                        manualStartScriptContent += 'node runSwagger\r\n';
+                        manualStartScriptContent += 'cd ' + project.swagger_dir + ' && ';
+                        manualStartScriptContent += 'npm install && ';
+                        manualStartScriptContent += 'node runSwagger.js';
                     }
                     //create .bat or .sh file that starts the app
                     fs.writeFileSync(runManuallyScriptPath, manualStartScriptContent, 'utf8');
 
                     const spawn = require('child_process').spawn;
 
-                    let cmd = spawn('cmd.exe', ['/c', runManuallyScriptPath], { cwd: project.swagger_dir });
+                    let cmd = '';
+
+                    cmd = isWindows ? spawn('cmd.exe', ['/c', runManuallyScriptPath], { cwd: project.swagger_dir }) : spawn('bash', [runManuallyScriptPath], { cwd: project.swagger_dir })
 
                     cmd.stdout.on('data', function (data) {
                         console.log('stdout: ' + data);
@@ -203,7 +218,7 @@ if (Meteor.isServer) {
                     });
                     console.log('process started..');
                     console.log('will check for npm module dependencies');
-                    project.port  = apiPort;
+                    project.port = apiPort;
                     resolve(apiPort);
                 }
                 catch (ex) {

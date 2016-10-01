@@ -10,5 +10,10 @@ Meteor.methods({
        console.log('projects discovered: ', APIprojects.length);
        return APIprojects;
 
+    },
+
+    'getHostIP' : function (){
+        console.log('[server] host ip', meteorHostIP);
+        return meteorHostIP;
     }
 })

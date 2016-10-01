@@ -22,6 +22,10 @@ Template.apis.destroyed = function () {
 if (Meteor.isClient) {
 	Meteor.call('getAvailableAPIs', function (err, res) {
 		Session.set('availableAPIs', res);
+	});
+
+	Meteor.call('getHostIP', function (err, res) {
+		Session.set('hostIP', res);
 	})
 }
 
@@ -29,6 +33,10 @@ Template.apis.helpers({
 	availableAPIs() {
 		return Session.get('availableAPIs');
     },
+	host() {
+		return Session.get('hostIP');
+	},
+
 	selectedAPIPort() {
 		let selectedAPIproject = Session.get('selectedAPI');
 
